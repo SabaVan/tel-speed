@@ -38,6 +38,9 @@ int main(int argc, char * argv[])
 	}
 	app_log_set_verbose(config.is_verbose);
 	app_log_set_debug(config.is_debug);
+	// enable result buffering, results will be printed at the end with app_log_flush_results()
+	// true if -a was passed, or -du -g
+	app_log_set_result(!(config.run_download_test && config.run_upload_test && config.detect_location));
 
 	if(config.is_verbose)
 		display_config(&config);
@@ -57,7 +60,7 @@ int main(int argc, char * argv[])
 				fprintf(stderr, "%s\n", app_get_full_error(APP_ERR_MALLOC));
 			}
 			config.selected_locations_count = 1;
-			app_log(LOG_INFO, "Detected location: %s", location);
+			app_log(LOG_RESULT, "Detected location: %s", location);
 		} else {
 			fprintf(stderr, "%s\n", app_get_full_error(stat));
 			goto cleanup;
@@ -151,8 +154,10 @@ int main(int argc, char * argv[])
 		}
 	}
 
-
+	// prints final results if auto mode was selected
+	app_log_flush_results(); 
 cleanup:
+	app_log_cleanup();
 	for(size_t i = 0; i < srv_count; i++) {
 		free(srvs[i].country);
 		free(srvs[i].host);

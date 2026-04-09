@@ -26,10 +26,12 @@ typedef enum {
 
 void app_log_set_verbose(bool enabled);
 void app_log_set_debug(bool enabled);
+void app_log_set_result(bool enabled);
 const char * app_error_to_string(app_error_t err);
 const char * app_get_full_error(app_error_t err);
 // with LOG_ERROR app_log function saves error message in internal buffer, else prints immediately
 void app_log(LogLevel level, const char *fmt, ...);
 void clear_app_error(void);
-
+void app_log_flush_results(void);
+void app_log_cleanup(void);
 #endif

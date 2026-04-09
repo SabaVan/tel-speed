@@ -3,16 +3,25 @@
 #include <stdarg.h>
 #include <string.h>
 #include <stdbool.h>
+#include <stdlib.h>
+
 static bool is_verbose = false;
 static bool is_debug = false;
+static bool print_result_now = false; 
+static char * result_buf = NULL;
+static size_t result_buf_used = 0;
+static size_t result_buf_size = 0;
 static char final_error_msg[1024] = {0}; 
 static char dynamic_detail[256];
 
 void app_log_set_verbose(bool enabled) {
-    is_verbose = enabled;
+	is_verbose = enabled;
 }
 void app_log_set_debug(bool enabled) {
-    is_debug = enabled;
+	is_debug = enabled;
+}
+void app_log_set_result(bool enabled) {
+	print_result_now = enabled;
 }
 
 const char * app_error_to_string(app_error_t err)
@@ -60,7 +69,7 @@ static void vset_app_error(const char *fmt, va_list args)
 		return;
 	}
 	vsnprintf(dynamic_detail, sizeof(dynamic_detail), fmt, args);
-    return;
+	return;
 }
 
 void app_log(LogLevel level, const char *fmt, ...) 
@@ -71,10 +80,36 @@ void app_log(LogLevel level, const char *fmt, ...)
 	va_start(args, fmt);
 	
 	if(level == LOG_RESULT) {
-		printf("\r\033[K");
-		vprintf(fmt, args);
-		fprintf(stdout, "\n");
-		fflush(stdout);
+		if(print_result_now) {
+			printf("\r\033[K");
+			vprintf(fmt, args);
+			printf("\n");
+			fflush(stdout);
+		} else {
+			char temp_line[256];
+			int len = vsnprintf(temp_line, sizeof(temp_line), fmt, args);
+			if (len < 0) {
+				len = 0;
+			} else if ((size_t)len >= sizeof(temp_line)) {
+				len = sizeof(temp_line) - 1;
+			}
+
+			if (result_buf_used + len + 2 > result_buf_size) {
+				size_t new_size = result_buf_size + 1024;
+				char *temp = realloc(result_buf, new_size);
+				if (temp) {
+					result_buf = temp;
+					result_buf_size = new_size;
+				}
+			}
+
+			if (result_buf) {
+				memcpy(result_buf + result_buf_used, temp_line, len);
+				result_buf_used += len;
+				result_buf[result_buf_used++] = '\n';
+				result_buf[result_buf_used] = '\0';
+			}
+		}
 		va_end(args);
 		return;
 	}
@@ -127,4 +162,19 @@ void clear_app_error(void)
 	final_error_msg[0] = '\0';
 	dynamic_detail[0] = '\0';
 	return;
+}
+void app_log_flush_results(void)
+{
+	if(result_buf && result_buf_used > 0) {
+		printf("\r\033[K%s", result_buf);
+		fflush(stdout);
+		result_buf_used = 0;
+		result_buf[0] = '\0'; 
+	}
+}
+
+void app_log_cleanup(void)
+{
+	free(result_buf);
+	result_buf = NULL;
 }
