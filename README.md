@@ -36,10 +36,10 @@ make
 
 - `-d, --download`: Run download speed test
 - `-u, --upload`: Run upload speed test
-- `-l, --location COUNTRY`: Filter servers by country (can be specified multiple times)
-- `-s, --server URL`: Specify server URL directly (bypasses server list)
+- `-l, --location COUNTRY`: Filter servers by country
+- `-s, --server URL`: Specify server URL directly (bypasses server list file)
 - `-t, --timeout MS`: Set test timeout in milliseconds (default: 15000)
-- `-v, --verbose`: Enable verbose output
+- `-v, --verbose`: Enable verbose output (default)
 - `--debug`: Enable debug logging
 - `-h, --help`: Show help message
 
@@ -119,7 +119,7 @@ The program expects a JSON file (`speedtest_server_list.json`) with the followin
 ]
 ```
 ## Example Run
-```shell
+```text
 ./tel-speed -a
 [INFO] Config -----------------------------------------------------------
 [INFO] (D/U/L)   TIMEOUT    URL_CNT    LOC_CNT    SRV_FILE                  
