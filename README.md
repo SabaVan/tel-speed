@@ -33,7 +33,7 @@ make
 ```
 
 ### Options
-
+- `-a, --auto`: Run all tests in automated mode
 - `-d, --download`: Run download speed test
 - `-u, --upload`: Run upload speed test
 - `-l, --location COUNTRY`: Filter servers by country
